@@ -19,6 +19,8 @@
   </style>
 </head>
 <body>
+
+  <canvas id="canvas" width= "1000" height= "500"></canvas>
   <script>
     // Initialize Canvas
     const canvas = document.createElement("canvas");
@@ -112,13 +114,14 @@
         isJumping = false;
       }
 
-      // Draw Player
-const playerImage = new Image();
-playerImage.src = 'tekrunner/media/player.png';
+      // Draw Player cr
+      const playerImage = new Image();
+playerImage.src = "tekrunner/media/player.png";
 
 playerImage.onload = function() {
   ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
 };
+
 
 
       // Handle Obstacles
