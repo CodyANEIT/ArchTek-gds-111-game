@@ -49,7 +49,7 @@
     let obstacleTimer = 0;
     let nextObstacleIn = getRandomInterval(60, 120);
 
-    // Utility function to generate random interval
+    // Generate Random Interval between obstacles
     function getRandomInterval(min, max) {
       return Math.floor(Math.random() * (max - min + 1)) + min;
     }
@@ -113,8 +113,13 @@
       }
 
       // Draw Player
-      ctx.fillStyle = "blue";
-      ctx.fillRect(player.x, player.y, player.width, player.height);
+const playerImage = new Image();
+playerImage.src = 'tekrunner/media/player.png';
+
+playerImage.onload = function() {
+  ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
+};
+
 
       // Handle Obstacles
       obstacleTimer++;
