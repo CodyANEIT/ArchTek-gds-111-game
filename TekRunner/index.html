@@ -29,6 +29,10 @@
     document.body.appendChild(canvas);
     const ctx = canvas.getContext("2d");
 
+    // Load Player Image
+    const playerImage = new Image();
+    playerImage.src = "images/player.png";
+
     // Define Game Variables
     let isJumping = false;
     let gravity = 0.7;
@@ -40,8 +44,8 @@
     const player = {
       x: 100,
       y: canvas.height - 100,
-      width: 50,
-      height: 50,
+      width: 40,
+      height: 40,
       velocityY: 0,
     };
 
@@ -114,15 +118,8 @@
         isJumping = false;
       }
 
-      // Draw Player cr
-      const playerImage = new Image();
-playerImage.src = "tekrunner/media/player.png";
-
-playerImage.onload = function() {
-  ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
-};
-
-
+      // Draw Player (replace rectangle with image)
+      ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
 
       // Handle Obstacles
       obstacleTimer++;
@@ -174,8 +171,15 @@ playerImage.onload = function() {
       }
     });
 
-    // Start the game
-    gameLoop();
+    // Start the game only when the image is loaded
+    playerImage.onload = () => {
+      resetGame();
+    };
+
+    // Error Handling
+    playerImage.onerror = () => {
+      console.error("Error loading player image. Ensure player.png is in the correct path.");
+    };
   </script>
 </body>
 </html>
