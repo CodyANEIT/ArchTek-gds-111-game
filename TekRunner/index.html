@@ -20,175 +20,218 @@
 </head>
 <body>
   <script>
-    // Initialize Canvas
-    const canvas = document.createElement("canvas");
-    canvas.width = 1000;
-    canvas.height = 500;
-    document.body.appendChild(canvas);
-    const ctx = canvas.getContext("2d");
+// Initialize Canvas
+const canvas = document.createElement("canvas");
+canvas.width = 1000;
+canvas.height = 500;
+document.body.appendChild(canvas);
+const ctx = canvas.getContext("2d");
 
-    // Load Player Image
-    const playerImage = new Image();
-    playerImage.src = "images/player.png";
+// Load Player Image
+const playerImage = new Image();
+playerImage.src = "images/player.png";
 
-    // Define Game Variables
-    let isJumping = false;
-    let gravity = 0.7;
-    let jumpStrength = 16;
-    let gameSpeed = 6.6;
-    let score = 0;
-    let gameOver = false;
+// Define Game Variables
+let isJumping = false;
+let gravity = 0.7;
+let jumpStrength = 16;
+let gameSpeed = 6.6;
+let score = 0;
+let gameOver = false;
 
-    const player = {
-      x: 100,
-      y: canvas.height - 100,
-      width: 40,
-      height: 40,
-      velocityY: 0,
-    };
+const player = {
+  x: 100,
+  y: canvas.height - 100,
+  width: 40,
+  height: 40,
+  velocityY: 0,
+  rotationAngle: 0, // New property to track the rotation angle
+};
 
-    const groundLevel = canvas.height - player.height;
+const groundLevel = canvas.height - player.height;
 
-    let obstacles = [];
-    let obstacleTimer = 0;
-    let nextObstacleIn = getRandomInterval(60, 120);
+let obstacles = [];
+let obstacleTimer = 0;
+let nextObstacleIn = getRandomInterval(60, 120);
 
-    // Generate Random Interval between obstacles
-    function getRandomInterval(min, max) {
-      return Math.floor(Math.random() * (max - min + 1)) + min;
+// Generate Random Interval between obstacles
+function getRandomInterval(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+// Reset Game
+function resetGame() {
+  player.y = groundLevel;
+  player.velocityY = 0;
+  isJumping = false;
+  player.rotationAngle = 0; // Reset rotation angle on reset
+  score = 0;
+  gameOver = false;
+  obstacles = [];
+  obstacleTimer = 0;
+  nextObstacleIn = getRandomInterval(60, 120);
+  gameSpeed = 6.6;
+  gameLoop();
+}
+
+// Handle Obstacles
+function createObstacle() {
+  const height = getRandomInterval(30, 80);
+  const width = getRandomInterval(20, 50); // Random obstacle width
+  obstacles.push({
+    x: canvas.width,
+    y: canvas.height - height,
+    width: width,
+    height: height,
+  });
+}
+
+// Collision Detection
+function checkCollision(player, obstacle) {
+  return (
+    player.x < obstacle.x + obstacle.width &&
+    player.x + player.width > obstacle.x &&
+    player.y < obstacle.y + obstacle.height &&
+    player.y + player.height > obstacle.y
+  );
+}
+
+// Increase game speed as score increases
+function increaseGameSpeed() {
+  if (score % 10 === 0 && score > 0) {
+    gameSpeed += 0.01; // Increase speed every 10 points
+  }
+}
+
+// Start Game Loop
+function gameLoop() {
+  if (gameOver) {
+    return displayGameOver(); // Stop the loop and display game over screen
+  }
+
+  // Clear canvas
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Handle Player Gravity and Jumping
+  player.velocityY += gravity; // Always apply gravity
+  player.y += player.velocityY;
+
+  // Smooth jump rotation angle
+let maxRotationAngle = 90; // Max rotation when jumping
+let rotationSpeed = 0.2; // Speed of rotation change
+let targetRotationAngle = 0; // Target angle for the current frame
+
+// Update rotation based on jump state
+if (isJumping) {
+  targetRotationAngle = Math.min(maxRotationAngle, (jumpStrength - player.velocityY) * 3); // Calculate desired rotation
+} else {
+  targetRotationAngle = 0; // Reset rotation when on the ground
+}
+
+// Smooth transition to the target rotation angle
+player.rotationAngle += (targetRotationAngle - player.rotationAngle) * rotationSpeed;
+
+
+  // Stop player at ground level
+  if (player.y >= groundLevel) {
+    player.y = groundLevel;
+    player.velocityY = 0;
+    isJumping = false;
+  }
+
+  // Save the current state of the canvas
+  ctx.save();
+
+  // Move the origin of the canvas to the player's position for rotation
+  ctx.translate(player.x + player.width / 2, player.y + player.height / 2);
+
+  // Rotate the player image (in radians)
+  ctx.rotate(player.rotationAngle * Math.PI / -180);
+
+  // Draw Player (replace rectangle with image)
+  ctx.drawImage(playerImage, -player.width / 2, -player.height / 2, player.width, player.height);
+
+  // Restore the canvas to its previous state
+  ctx.restore();
+
+  // Handle Obstacles
+  obstacleTimer++;
+  if (obstacleTimer >= nextObstacleIn) {
+    createObstacle();
+    obstacleTimer = 0;
+    nextObstacleIn = getRandomInterval(60, 120);
+  }
+
+  // Check and update obstacles
+  for (let i = obstacles.length - 1; i >= 0; i--) {
+    const obstacle = obstacles[i];
+    obstacle.x -= gameSpeed;
+
+    // Check for collision
+    if (checkCollision(player, obstacle)) {
+      gameOver = true;
+      break;
     }
 
-    // Reset Game
-    function resetGame() {
-      player.y = groundLevel;
-      player.velocityY = 0;
-      isJumping = false;
-      score = 0;
-      gameOver = false;
-      obstacles = [];
-      obstacleTimer = 0;
-      nextObstacleIn = getRandomInterval(60, 120);
-      gameSpeed = 6.6;
-      gameLoop();
+    // Remove off-screen obstacles and increment score
+    if (obstacle.x + obstacle.width < 0) {
+      obstacles.splice(i, 1);
+      score++;
     }
 
-    // Handle Obstacles
-    function createObstacle() {
-      const height = getRandomInterval(30, 80);
-      obstacles.push({
-        x: canvas.width,
-        y: canvas.height - height,
-        width: 30,
-        height: height,
-      });
-    }
+    // Draw obstacles
+    ctx.fillStyle = "green";
+    ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+  }
 
-    // Collision Detection
-    function checkCollision(player, obstacle) {
-      return (
-        player.x < obstacle.x + obstacle.width &&
-        player.x + player.width > obstacle.x &&
-        player.y < obstacle.y + obstacle.height &&
-        player.y + player.height > obstacle.y
-      );
-    }
+  // Display score
+  ctx.fillStyle = "black";
+  ctx.font = "20px Arial";
+  ctx.fillText(`Score: ${score}`, 20, 30);
 
-    // Start Game Loop
-    function gameLoop() {
-      if (gameOver) {
-        ctx.fillStyle = '#FFFFFF';
-      ctx.font = '30px Arial';
-      ctx.fillText('Game Over!', canvas.width / 2 - 75, canvas.height / 2 - 30);
-      ctx.font = '20px Arial';
-      ctx.fillText('Final Score: ' + score, canvas.width / 2 - 60, canvas.height / 2 + 10);
-      ctx.fillText('Press Space to Restart', canvas.width / 2 - 90, canvas.height / 2 + 40);
-        return;
-      }
+  // Increase game speed as score increases
+  increaseGameSpeed();
 
-      // Clear canvas
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+  // Request next frame
+  requestAnimationFrame(gameLoop);
+}
 
-      // Handle Player Gravity and Jumping
-      player.velocityY += gravity; // Always apply gravity
-      player.y += player.velocityY;
+// Display Game Over screen
+function displayGameOver() {
+  ctx.fillStyle = '#000000'; // Darker background for Game Over screen
+  ctx.globalAlpha = 0.7; // Add transparency
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.globalAlpha = 1.0; // Reset opacity
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '30px Arial';
+  ctx.fillText('Game Over!', canvas.width / 2 - 75, canvas.height / 2 - 30);
+  ctx.font = '20px Arial';
+  ctx.fillText('Final Score: ' + score, canvas.width / 2 - 60, canvas.height / 2 + 10);
+  ctx.fillText('Press Space to Restart', canvas.width / 2 - 90, canvas.height / 2 + 40);
+}
 
-      // Stop player at ground level
-      if (player.y >= groundLevel) {
-        player.y = groundLevel;
-        player.velocityY = 0;
-        isJumping = false;
-      }
-
-      // Draw Player (replace rectangle with image)
-      ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
-
-      // Handle Obstacles
-      obstacleTimer++;
-      if (obstacleTimer >= nextObstacleIn) {
-        createObstacle();
-        obstacleTimer = 0;
-        nextObstacleIn = getRandomInterval(60, 120);
-      }
-
-      for (let i = obstacles.length - 1; i >= 0; i--) {
-        const obstacle = obstacles[i];
-        obstacle.x -= gameSpeed;
-
-        // Check for collision
-        if (checkCollision(player, obstacle)) {
-          gameOver = true;
-          break;
-        }
-
-        // Remove off-screen obstacles and increment score
-        if (obstacle.x + obstacle.width < 0) {
-          obstacles.splice(i, 1);
-          score++;
-        }
-
-        // Draw obstacles
-        ctx.fillStyle = "green";
-        ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
-      }
-
-      // Display score
-      ctx.fillStyle = "black";
-      ctx.font = "20px Arial";
-      ctx.fillText(`Score: ${score}`, 20, 30);
-
-      // Request next frame
-      requestAnimationFrame(gameLoop);
-    }
-    // Display Game Over screen
-    function displayGameOver() {
-      ctx.fillStyle = '#FFFFFF';
-      ctx.font = '30px Arial';
-      ctx.fillText('Game Over!', canvas.width / 2 - 75, canvas.height / 2 - 30);
-      ctx.font = '20px Arial';
-      ctx.fillText('Final Score: ' + score, canvas.width / 2 - 60, canvas.height / 2 + 10);
-      ctx.fillText('Press Space to Restart', canvas.width / 2 - 90, canvas.height / 2 + 40);
-    }
-    // Listen for Keydown Events
-    document.addEventListener("keydown", (event) => {
-      if (event.code === "Space") {
-        if (gameOver) {
-          resetGame();
-        } else if (!isJumping) {
-          isJumping = true;
-          player.velocityY = -jumpStrength; // Set upward velocity for jump
-        }
-      }
-    });
-
-    // Start the game only when the image is loaded
-    playerImage.onload = () => {
+// Listen for Keydown Events
+document.addEventListener("keydown", (event) => {
+  if (event.code === "Space") {
+    if (gameOver) {
       resetGame();
-    };
+    } else if (!isJumping) {
+      isJumping = true;
+      player.velocityY = -jumpStrength; // Set upward velocity for jump
+    }
+  }
+});
 
-    // Error Handling
-    playerImage.onerror = () => {
-      console.error("Error loading player image. Ensure player.png is in the correct path.");
-    };
+// Start the game only when the image is loaded
+playerImage.onload = () => {
+  resetGame();
+};
+
+// Error Handling
+playerImage.onerror = () => {
+  console.error("Error loading player image. Ensure player.png is in the correct path.");
+};
+
   </script>
 </body>
 </html>
