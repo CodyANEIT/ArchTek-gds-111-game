@@ -96,9 +96,12 @@
     // Start Game Loop
     function gameLoop() {
       if (gameOver) {
-        ctx.fillStyle = "red";
-        ctx.font = "30px Arial";
-        ctx.fillText("Game Over! Press Space to Restart", canvas.width / 4, canvas.height / 2);
+        ctx.fillStyle = '#FFFFFF';
+      ctx.font = '30px Arial';
+      ctx.fillText('Game Over!', canvas.width / 2 - 75, canvas.height / 2 - 30);
+      ctx.font = '20px Arial';
+      ctx.fillText('Final Score: ' + score, canvas.width / 2 - 60, canvas.height / 2 + 10);
+      ctx.fillText('Press Space to Restart', canvas.width / 2 - 90, canvas.height / 2 + 40);
         return;
       }
 
@@ -156,7 +159,15 @@
       // Request next frame
       requestAnimationFrame(gameLoop);
     }
-
+    // Display Game Over screen
+    function displayGameOver() {
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = '30px Arial';
+      ctx.fillText('Game Over!', canvas.width / 2 - 75, canvas.height / 2 - 30);
+      ctx.font = '20px Arial';
+      ctx.fillText('Final Score: ' + score, canvas.width / 2 - 60, canvas.height / 2 + 10);
+      ctx.fillText('Press Space to Restart', canvas.width / 2 - 90, canvas.height / 2 + 40);
+    }
     // Listen for Keydown Events
     document.addEventListener("keydown", (event) => {
       if (event.code === "Space") {
