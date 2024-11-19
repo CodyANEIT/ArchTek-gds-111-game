@@ -30,21 +30,15 @@ const ctx = canvas.getContext("2d");
 const backgroundLayer1 = new Image();
 backgroundLayer1.src = "images/sky.png";
 const backgroundLayer2 = new Image();
-backgroundLayer2.src = "images/clouds.png";
+backgroundLayer2.src = "images/city1.png";
 const backgroundLayer3 = new Image();
-backgroundLayer3.src = "images/city1.png";
+backgroundLayer3.src = "images/clouds.png";
 const backgroundLayer4 = new Image();
-backgroundLayer4.src = "images/rooftop.png";
-
-let x = 0;
-
-function animate(){
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.drawImage(backgroundLayer4, x, 0);
-  x--;
-  requestAnimationFrame(animate);
-}
-animate();
+backgroundLayer4.src = "images/city2.png"
+const backgroundLayer5 = new Image();
+backgroundLayer5.src = "images/Clouds2.png"
+const backgroundLayer6 = new Image();
+backgroundLayer6.src = "images/rooftop.png";
 
 // Load Player Image
 const playerImage = new Image();
