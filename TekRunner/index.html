@@ -7,6 +7,7 @@
   <style>
     body {
       margin: 0;
+      font-family: 'Courier New', Courier, monospace;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -34,9 +35,9 @@ backgroundLayer2.src = "images/city1.png";
 const backgroundLayer3 = new Image();
 backgroundLayer3.src = "images/clouds.png";
 const backgroundLayer4 = new Image();
-backgroundLayer4.src = "images/city2.png"
+backgroundLayer4.src = "images/city2.png";
 const backgroundLayer5 = new Image();
-backgroundLayer5.src = "images/Clouds2.png"
+backgroundLayer5.src = "images/Clouds2.png";
 const backgroundLayer6 = new Image();
 backgroundLayer6.src = "images/rooftop.png";
 
@@ -117,6 +118,30 @@ function increaseGameSpeed() {
   }
 }
 
+let backgroundPositions = [0, 0, 0, 0, 0, 0]; // Starting x-positions for each background layer
+let backgroundSpeeds = [0.5, 1, 1.5, 2, 2.5, 3]; // Different speeds for parallax effect
+
+function drawBackground() {
+  for (let i = 0; i < 6; i++) {
+    const layer = eval(`backgroundLayer${i + 1}`);
+    
+    if (!layer.complete) continue; // Ensure the image is loaded
+
+    // Draw the background image for this layer
+    ctx.drawImage(layer, backgroundPositions[i], 0, canvas.width, canvas.height);
+    ctx.drawImage(layer, backgroundPositions[i] + canvas.width, 0, canvas.width, canvas.height);
+
+    // Update the background position for scrolling
+    backgroundPositions[i] -= backgroundSpeeds[i] * (gameSpeed / 6.6); // Parallax speed adjustment
+
+    // Loop background position for seamless scrolling
+    if (backgroundPositions[i] <= -canvas.width) {
+      backgroundPositions[i] = 0;
+    }
+  }
+}
+
+
 // Start Game Loop
 function gameLoop() {
   if (gameOver) {
@@ -159,10 +184,13 @@ player.rotationAngle += (targetRotationAngle - player.rotationAngle) * rotationS
   // Move the origin of the canvas to the player's position for rotation
   ctx.translate(player.x + player.width / 2, player.y + player.height / 2);
 
+  // Draw Background
+  drawBackground();
+
   // Rotate the player image (in radians)
   ctx.rotate(player.rotationAngle * Math.PI / -180);
 
-  // Draw Player (replace rectangle with image)
+  // Draw Player
   ctx.drawImage(playerImage, -player.width / 2, -player.height / 2, player.width, player.height);
 
   // Restore the canvas to its previous state
@@ -194,13 +222,13 @@ player.rotationAngle += (targetRotationAngle - player.rotationAngle) * rotationS
     }
 
     // Draw obstacles
-    ctx.fillStyle = "green";
+    ctx.fillStyle = "#cdbcb2";
     ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
   }
 
   // Display score
   ctx.fillStyle = "black";
-  ctx.font = "20px Arial";
+  ctx.font = "20px 'Courier New', monospace";
   ctx.fillText(`Score: ${score}`, 20, 30);
 
   // Increase game speed as score increases
@@ -217,9 +245,9 @@ function displayGameOver() {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.globalAlpha = 1.0; // Reset opacity
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = '30px Arial';
+  ctx.font = '30px Courier New, monospace';
   ctx.fillText('Game Over!', canvas.width / 2 - 75, canvas.height / 2 - 30);
-  ctx.font = '20px Arial';
+  ctx.font = '20px Courier New, monospace';
   ctx.fillText('Final Score: ' + score, canvas.width / 2 - 60, canvas.height / 2 + 10);
   ctx.fillText('Press Space to Restart', canvas.width / 2 - 90, canvas.height / 2 + 40);
 }
@@ -236,10 +264,27 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
+// Listen for Touch Events
+document.addEventListener("touchstart", () => {
+  if (gameOver) {
+    resetGame();
+  } else if (!isJumping) {
+    isJumping = true;
+    player.velocityY = -jumpStrength;
+  }
+});
+
+
 // Start the game only when the image is loaded
 playerImage.onload = () => {
   resetGame();
 };
+
+const layers = [backgroundLayer1, backgroundLayer2, backgroundLayer3, backgroundLayer4, backgroundLayer5, backgroundLayer6];
+layers.forEach((layer) => {
+  layer.onload = () => console.log(`${layer.src} loaded`);
+  layer.onerror = () => console.error(`${layer.src} failed to load`);
+});
 
 // Error Handling
 playerImage.onerror = () => {
