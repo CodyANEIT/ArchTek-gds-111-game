@@ -91,7 +91,7 @@ function resetGame() {
 
 // Handle Obstacles
 function createObstacle() {
-  const height = getRandomInterval(30, 80);
+  const height = getRandomInterval(30, 90);
   const width = getRandomInterval(20, 50); // Random obstacle width
   obstacles.push({
     x: canvas.width,
@@ -124,23 +124,26 @@ let backgroundSpeeds = [0.5, 1, 1.5, 2, 2.5, 3]; // Different speeds for paralla
 function drawBackground() {
   for (let i = 0; i < 6; i++) {
     const layer = eval(`backgroundLayer${i + 1}`);
-    
     if (!layer.complete) continue; // Ensure the image is loaded
 
-    // Draw the background image for this layer
+    // Draw current layer
     ctx.drawImage(layer, backgroundPositions[i], 0, canvas.width, canvas.height);
     ctx.drawImage(layer, backgroundPositions[i] + canvas.width, 0, canvas.width, canvas.height);
 
-    // Update the background position for scrolling
-    backgroundPositions[i] -= backgroundSpeeds[i] * (gameSpeed / 6.6); // Parallax speed adjustment
+    // Update position for scrolling
+    backgroundPositions[i] -= backgroundSpeeds[i] * (gameSpeed / 6.6);
 
-    // Loop background position for seamless scrolling
+    // Loop for seamless scrolling
     if (backgroundPositions[i] <= -canvas.width) {
       backgroundPositions[i] = 0;
     }
   }
 }
 
+
+function resetCanvasTransform() {
+  ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset all transformations
+}
 
 // Start Game Loop
 function gameLoop() {
@@ -178,14 +181,14 @@ player.rotationAngle += (targetRotationAngle - player.rotationAngle) * rotationS
     isJumping = false;
   }
 
+  // Draw Background
+  drawBackground();
+
   // Save the current state of the canvas
   ctx.save();
 
   // Move the origin of the canvas to the player's position for rotation
   ctx.translate(player.x + player.width / 2, player.y + player.height / 2);
-
-  // Draw Background
-  drawBackground();
 
   // Rotate the player image (in radians)
   ctx.rotate(player.rotationAngle * Math.PI / -180);
@@ -290,6 +293,9 @@ layers.forEach((layer) => {
 playerImage.onerror = () => {
   console.error("Error loading player image. Ensure player.png is in the correct path.");
 };
+console.log('Background Positions:', backgroundPositions);
+console.log('Player X:', player.x);
+
 
   </script>
 </body>
